@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,11 +34,11 @@ interface Props {
 }
 
 const AccountProfile = ({ user, btnTitle }: Props) => {
-   const [files, setFiles] = useState<File[]>([]);
-   const  {startUpload} = useUploadThing("media");
+  const [files, setFiles] = useState<File[]>([]);
+  const { startUpload } = useUploadThing("media");
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const form = useForm({
     resolver: zodResolver(UserValidation),
     defaultValues: {
@@ -56,50 +54,92 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
     fieldChange: (value: string) => void
   ) => {
     e.preventDefault();
- 
-  const fileReader = new FileReader();
 
-  if(e.target.files && e.target.files.length > 0){
-    const file = e.target.files[0];
+    const fileReader = new FileReader();
 
-    setFiles(Array.from(e.target.files));
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
 
-    if(!file.type.includes('image')) return;
+      setFiles(Array.from(e.target.files));
 
-    fileReader.onload = async (event) => {
-      const imageDataUrl = event.target?.result?.toString() || '';
+      if (!file.type.includes("image")) return;
 
-      fieldChange(imageDataUrl);
+      fileReader.onload = async (event) => {
+        const imageDataUrl = event.target?.result?.toString() || "";
+
+        fieldChange(imageDataUrl);
+      };
+      fileReader.readAsDataURL(file);
     }
-    fileReader.readAsDataURL(file);
-  }
-};
+  };
 
-  
+  // const onSubmit = async (values: z.infer<typeof UserValidation>) => {
+  //   const blob = values.profile_photo;
+
+  //   const hasImageChanged = isBase64Image(blob);
+  //   // console.log(values);
+
+  //   if (hasImageChanged) {
+  //     try {
+  //       const imgRes = await startUpload(files);
+
+  //       if (imgRes && imgRes[0].fileUrl) {
+  //         values.profile_photo = imgRes[0].fileUrl;
+  //       }
+  //     } catch (error) {
+  //       console.log(error);
+  //     }
+  //   }
+
+  //   await updateUser({
+  //     name: values.name,
+  //     path: pathname,
+  //     username: values.username,
+  //     userId: user.id,
+  //     bio: values.bio,
+  //     image: values.profile_photo,
+  //   });
+
+  //   if (pathname === "/profile/edit") {
+  //     router.back();
+  //   } else {
+  //     router.push("/");
+  //   }
+  // };
 
   const onSubmit = async (values: z.infer<typeof UserValidation>) => {
     const blob = values.profile_photo;
-    
+
     const hasImageChanged = isBase64Image(blob);
-    // console.log(values);
 
-    if(hasImageChanged){
-      const imgRes =  await startUpload(files)
+    if (hasImageChanged) {
+      try {
+        const imgRes = await startUpload(files);
 
-      if(imgRes && imgRes[0].fileUrl){
-        values.profile_photo = imgRes[0].fileUrl;
+        if (imgRes && imgRes[0] && imgRes[0].fileUrl) {
+          // Ensure that imgRes[0] and imgRes[0].fileUrl are not null or undefined
+          values.profile_photo = imgRes[0].fileUrl;
+        }
+      } catch (error) {
+        console.error(error);
       }
     }
 
     await updateUser({
-        name:values.name,
-        path:pathname,
-        username: values.username,
-        userId: user.id, 
-        bio:values.bio,
-        image:values.profile_photo,        
-    })
-  }
+      name: values.name,
+      path: pathname,
+      username: values.username,
+      userId: user.id,
+      bio: values.bio,
+      image: values.profile_photo,
+    });
+
+    if (pathname === "/profile/edit") {
+      router.back();
+    } else {
+      router.push("/");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -150,7 +190,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
               <FormLabel className="text-base-semibold text-light-2">
                 Name
               </FormLabel>
-              <FormControl >
+              <FormControl>
                 <Input
                   type="text"
                   className="account-form_input no-focus"
@@ -163,7 +203,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 
         <FormField
           control={form.control}
-          name='username'
+          name="username"
           render={({ field }) => (
             <FormItem className="flex flex-col w-full gap-3">
               <FormLabel className="text-base-semibold text-light-2">
@@ -182,13 +222,13 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 
         <FormField
           control={form.control}
-           name="bio"
+          name="bio"
           render={({ field }) => (
             <FormItem className="flex flex-col w-full gap-3">
               <FormLabel className="text-base-semibold text-light-2">
                 Bio
               </FormLabel>
-              <FormControl >
+              <FormControl>
                 <Textarea
                   rows={10}
                   className="account-form_input no-focus"
@@ -198,7 +238,9 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
             </FormItem>
           )}
         />
-        <Button type="submit" className="bg-primary-500 w-full">Submit</Button>
+        <Button type="submit" className="bg-primary-500 w-full">
+          Submit
+        </Button>
       </form>
     </Form>
   );
