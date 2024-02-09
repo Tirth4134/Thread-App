@@ -107,6 +107,11 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
   //   }
   // };
 
+  interface UploadResponse {
+    // Adjust these fields based on the actual response structure
+    fileUrl: string;
+    // ... other fields if applicable
+  }
   const onSubmit = async (values: z.infer<typeof UserValidation>) => {
     const blob = values.profile_photo;
 
@@ -114,7 +119,7 @@ const AccountProfile = ({ user, btnTitle }: Props) => {
 
     if (hasImageChanged) {
       try {
-        const imgRes = await startUpload(files);
+        const imgRes:UploadResponse[] = await startUpload(files);
 
         if (imgRes && imgRes[0] && imgRes[0].fileUrl) {
           // Ensure that imgRes[0] and imgRes[0].fileUrl are not null or undefined
